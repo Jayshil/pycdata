@@ -1,1 +1,1 @@
-from pycdata import dpr
+from .dpr import *
