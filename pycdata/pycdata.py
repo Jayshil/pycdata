@@ -126,3 +126,7 @@ def tess_data(name, pdc=True, verbose=True):
         os.system('tar -cvzf ' + name1 + '.tgz ' + name2 + '.fits')
         os.system('rm ' + name2 + '.fits')
         os.system('mv ' + name1 + '.tgz ' + p3 + '/' + name1 + '.tgz')
+        if verbose:
+            print('Name\t\tTIC-id\t\t\tSector\t\t\t.tgz name')
+            print('----------------------------------------------------------------------------------------')
+            print(name + '\t\t' + ticids[i][8:] + '\t\t' + sectors[i][-4:] + '\t\t' + name1)
