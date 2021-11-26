@@ -31,7 +31,7 @@ def tess_data(name, pdc=True, verbose=True):
         pycheops
     """
     try:
-        obt = Observations.query_object(name, radius=0.01)
+        obt = Observations.query_object(name, radius=0.001)
     except:
         raise Exception('The name of the object does not seem to be correct.\nPlease try again...')
     # b contains indices of the timeseries observations from TESS
@@ -59,6 +59,7 @@ def tess_data(name, pdc=True, verbose=True):
     if verbose:
         print('Data products found over ' + str(len(sectors)) + ' sectors.')
         print('Downloading them...')
+    disp_tic, disp_sec, disp_tgz = [], [], []
     for i in range(len(sectors)):
         dpr = Observations.get_product_list(obt[int(b[i])])
         cij = 0
@@ -126,14 +127,18 @@ def tess_data(name, pdc=True, verbose=True):
         os.system('tar -cvzf ' + name1 + '.tgz ' + name2 + '.fits')
         os.system('rm ' + name2 + '.fits')
         os.system('mv ' + name1 + '.tgz ' + p3 + '/' + name1 + '.tgz')
-        if verbose:
-            print('----------------------------------------------------------------------------------------')
-            print('Name\t\tTIC-id\t\t\tSector\t\t\t.tgz name')
-            print('----------------------------------------------------------------------------------------')
-            print(name + '\t\t' + ticids[i][8:] + '\t\t' + sectors[i][-4:] + '\t\t' + name1)
+        disp_tic.append(ticids[i][8:])
+        disp_sec.append(sectors[i][-4:])
+        disp_tgz.append(name1)
+    if verbose:
+        print('----------------------------------------------------------------------------------------')
+        print('Name\t\tTIC-id\t\t\tSector\t\t\t.tgz name')
+        print('----------------------------------------------------------------------------------------')
+        for i in range(len(disp_tgz)):
+                print(name + '\t\t' + disp_tic[i] + '\t\t' + disp_sec[i] + '\t\t' + disp_tgz[i])
 
 
-def pipe_data(name, fileid, imgette=True, flag=0):
+def pipe_data(name, fileid, imagette=True):
     """
     Parameters:
     -----------
@@ -166,7 +171,7 @@ def pipe_data(name, fileid, imgette=True, flag=0):
     fl, fle = np.asarray(dta['FLUX'])[msk], np.asarray(dta['FLUXERR'])[msk]
     roll, xc, yc, tft2 = np.asarray(dta['ROLL'])[msk], np.asarray(dta['XC'])[msk],\
         np.asarray(dta['YC'])[msk], np.asarray(dta['thermFront_2'])[msk]
-    if imgette:
+    if imagette:
         bg = np.asarray(dta['BG'])[msk] * 50 * 50
     else:
         bg = np.asarray(dta['BG'])[msk] * 200 * 200
@@ -219,3 +224,146 @@ def pipe_data(name, fileid, imgette=True, flag=0):
     tab1.write(fileid + '-meta.fits')
     os.system('mv ' + fileid + '-meta.fits ' + p3 + '/' + fileid + '_V0000-meta.fits')
     print('meta\t\t\t\t\t' + fileid + '_V0000-meta.fits')
+
+
+def kepler_data(name, pdc=True, long_cadence=True, verbose=True):
+    """
+    Parameters:
+    -----------
+    name : str
+        Name of the planet
+    pdc : bool
+        Whether to extract PDCSAP flux or not
+        Default is True
+    long_cadence : bool
+        Whether to download long cadence data or not
+        Default is True
+    verbose : bool
+        Boolean on whether to show print updates
+        Default is True
+    -----------
+    return
+        tgz file readable to
+        pycheops
+    """
+    if ('K2' in name) and (not long_cadence):
+        raise Exception('No Short Cadence data available for K2 objects.')
+    try:
+        obt = Observations.query_object(name, radius=0.001)
+    except:
+        raise Exception('The name of the object does not seem to be correct.\nPlease try again...')
+    # b contains indices of the timeseries observations from TESS
+    b = np.array([])
+    for j in range(len(obt['intentType'])):
+        if (obt['obs_collection'][j] == 'Kepler' or obt['obs_collection'][j] == 'K2') and obt['dataproduct_type'][j] == 'timeseries':
+            b = np.hstack((b,j))
+    if len(b) == 0:
+        raise Exception('No Kepler/K2 timeseries data available for this target.\nTry another target...')
+    # To extract obs-id from the observation table
+    pi_name, obsids, exptime, scad, lcad = np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
+    for i in range(len(b)):
+        data1 = obt['dataURL'][int(b[i])]
+        if 'lc' in data1.split('_'):
+            lcad = np.hstack((lcad, b[i]))
+        if 'sc' in data1.split('_'):
+            scad = np.hstack((scad, b[i]))
+        if 'llc.fits' in data1.split('_'):
+            lcad = np.hstack((lcad, b[i]))
+        pi_nm = obt['proposal_pi'][int(b[i])]
+        if type(pi_nm) != str:
+            pi_nm = 'K2 Team'
+        pi_name = np.hstack((pi_name, pi_nm))
+    if long_cadence:
+        dwn_b = lcad
+        keywd = 'Lightcurve Long Cadence'
+    else:
+        dwn_b = scad
+        keywd = 'Lightcurve Short Cadence'
+    for i in range(len(dwn_b)):
+        obsids = np.hstack((obsids, obt['obsid'][int(dwn_b[i])]))
+        exptime = np.hstack((obsids, obt['t_exptime'][int(dwn_b[i])]))
+    disp_kic, disp_sec, disp_tgz = [], [], []
+    for i in range(len(dwn_b)):
+        dpr = Observations.get_product_list(obt[int(dwn_b[i])])
+        cij = []
+        for j in range(len(dpr['obsID'])):
+            if keywd in dpr['description'][j]:
+                cij.append(j)
+        if verbose:
+            print('Data products found over ' + str(len(cij)) + ' quarters/cycles.')
+            print('Downloading them...')
+        for j in range(len(cij)):
+            sector = dpr['description'][cij[j]].split('- ')[1]
+            tab = Observations.download_products(dpr[cij[j]])
+            lpt = tab['Local Path'][0][1:]
+            # Reading fits
+            hdul = fits.open(p1 + lpt)
+            hdr = hdul[0].header
+            kicid = str(hdr['KEPLERID'])
+            if 'Kepler' in name:
+                kicid = '00' + kicid
+            dta = Table.read(hdul[1])
+            # Available data products
+            if pdc:
+                fl = np.asarray(dta['PDCSAP_FLUX'])
+                fle = np.asarray(dta['PDCSAP_FLUX_ERR'])
+            else:
+                fl = np.asarray(dta['SAP_FLUX'])
+                fle = np.asarray(dta['SAP_FLUX_ERR'])
+            mask = np.isfinite(fl)                                # Creating Mask to remove Nans
+            bjd1 = np.asarray(dta['TIME'])[mask] + 2454833        # BJD without mask
+            fl, fle = fl[mask], fle[mask]                         # Flux and Error in flux without Nans
+            bjd2 = Time(bjd1, format='jd')                        # Astropy.Time object to store value in JD
+            utc1 = bjd2.to_value('fits')                          # To store date and time in UTC
+            cenx = np.asarray(dta['MOM_CENTR1'])[mask] + np.asarray(dta['POS_CORR1'])[mask]             # Centroid-x
+            ceny = np.asarray(dta['MOM_CENTR2'])[mask] + np.asarray(dta['POS_CORR2'])[mask]             # Centroid-y
+            if pdc:
+                bg = np.zeros_like(fl)
+            else:
+                bg = np.asarray(dta['SAP_BKG'])[mask]             # Background for SAP Flux
+            mjd1 = bjd1 - 2400000.
+            status, event, dark, conta, conta_err, smear, smerr, roll, locx, locy =\
+                np.zeros_like(fl), np.zeros_like(fl), np.zeros_like(fl), np.zeros_like(fl), np.zeros_like(fl),\
+                np.zeros_like(fl), np.zeros_like(fl), np.zeros_like(fl), np.zeros_like(fl), np.zeros_like(fl)
+            # Creating astropy Table for storing data
+            tab = Table()
+            tab['UTC_TIME'], tab['MJD_TIME'], tab['BJD_TIME'], tab['FLUX'], tab['FLUXERR'], tab['STATUS'],\
+                tab['EVENT'], tab['DARK'], tab['BACKGROUND'], tab['CONTA_LC'], tab['CONTA_LC_ERR'], tab['SMEARING_LC'],\
+                tab['SMEARING_LC_ERR'], tab['ROLL_ANGLE'], tab['LOCATION_X'], tab['LOCATION_Y'], tab['CENTROID_X'], tab['CENTROID_Y'] =\
+                utc1, mjd1, bjd1, fl, fle, status, event, dark, bg, conta, conta_err, smear, smerr, roll, locx, locy, cenx, ceny
+            # Writing table data to fits file
+            tab.write('KIC_' + kicid + '_' + sector + '.fits', format='fits')
+            tb_fits = fits.open('KIC_' + kicid + '_' + sector + '.fits')
+            tb_fits_hdr = tb_fits[1].header
+            hdr1 = hdr[8:]
+            crds = hdr1.cards
+            for j in range(len(crds)):
+                tb_fits_hdr.append(crds[j])
+            tb_fits_hdr.append(('PI_NAME', pi_name[i], 'Name of the PI'))                    # Adding PI Name to the header file
+            tb_fits_hdr.append(('TARGNAME', name, 'Name of the target'))                     # Adding name of the target
+            tb_fits_hdr.append(('OBSID', obsids[i], 'Observation ID'))                       # Adding Observation ID
+            tb_fits_hdr.append(('NEXP', '1', 'Number of Images co-added'))                   # NEXP (Not important for TESS)
+            tb_fits_hdr.append(('EXPTIME', float(exptime[i]), '(sec) Exposure Time'))               # Adding Exposure time
+            tb_fits_hdr.append(('TEXPTIME', float(exptime[i]), '(sec) Total exposure time'))        # Adding Total Exposure time
+            tb_fits_hdr.append(('SPECTYPE', str(hdr1['TEFF']), '(K) Temperature'))           # Adding Spectral type/not available, so adding Teff
+            tb_fits_hdr.append(('PIPE_VER', '0.0.0', 'Pipeline'))                            # Adding Pipeline Version
+            tb_fits_hdr.append(('AP_RADI', 11.0, '(px) Radius of Aperture'))                 # Aperture radius
+            tb_fits_hdr.rename_keyword('RA_OBJ', 'RA_TARG')                                  # RA and DEC keyword name change
+            tb_fits_hdr.rename_keyword('DEC_OBJ', 'DEC_TARG')
+            os.system('rm ' + 'KIC_' + kicid + '_' + sector + '.fits')
+            os.system('rm -r mastDownload')
+            name1 = 'CH_PR' + kicid[0:6] + '_TG' + kicid[6:] + '000_V0000_KIC_' + sector
+            name2 = 'CH_PR' + kicid[0:6] + '_TG' + kicid[6:] + '000_SCI_COR_Lightcurve-DEFAULT_V0000_KIC_' + sector
+            tb_fits.writeto(name2 + '.fits')
+            os.system('tar -cvzf ' + name1 + '.tgz ' + name2 + '.fits')
+            os.system('rm ' + name2 + '.fits')
+            os.system('mv ' + name1 + '.tgz ' + p3 + '/' + name1 + '.tgz')
+            disp_kic.append(kicid)
+            disp_sec.append(sector)
+            disp_tgz.append(name1)
+    if verbose:
+        print('----------------------------------------------------------------------------------------')
+        print('Name\t\tKIC-id\t\t\tSector\t\t\t.tgz name')
+        print('----------------------------------------------------------------------------------------')
+        for i in range(len(disp_tgz)):
+            print(name + '\t\t' + disp_kic[i] + '\t\t' + disp_sec[i] + '\t\t' + disp_tgz[i])
