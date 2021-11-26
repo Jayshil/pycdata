@@ -42,7 +42,7 @@ def tess_data(name, pdc=True, verbose=True):
     if len(b) == 0:
         raise Exception('No TESS timeseries data available for this target.\nTry another target...')
     # To extract obs-id from the observation table
-    sectors, ticids, pi_name, obsids, exptime = np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
+    sectors, pi_name, obsids, exptime = np.array([]), np.array([]), np.array([]), np.array([])
     for i in range(len(b)):
         data1 = obt['dataURL'][int(b[i])]
         if data1[-9:] == 's_lc.fits':
@@ -52,7 +52,6 @@ def tess_data(name, pdc=True, verbose=True):
                     sec = fls[j]
                     tic = fls[j+1]
             sectors = np.hstack((sectors, sec))
-            ticids = np.hstack((ticids, tic))
             obsids = np.hstack((obsids, obt['obsid'][int(b[i])]))
             pi_name = np.hstack((pi_name, obt['proposal_pi'][int(b[i])]))
             exptime = np.hstack((exptime, obt['t_exptime'][int(b[i])]))
@@ -71,6 +70,8 @@ def tess_data(name, pdc=True, verbose=True):
         # Reading fits
         hdul = fits.open(p1 + lpt)
         hdr = hdul[0].header
+        ticid = int(hdr['TICID'])
+        ticid = f"{ticid:010}"
         dta = Table.read(hdul[1])
         # Available data products
         if pdc:
@@ -101,8 +102,8 @@ def tess_data(name, pdc=True, verbose=True):
             tab['SMEARING_LC_ERR'], tab['ROLL_ANGLE'], tab['LOCATION_X'], tab['LOCATION_Y'], tab['CENTROID_X'], tab['CENTROID_Y'] =\
             utc1, mjd1, bjd1, fl, fle, status, event, dark, bg, conta, conta_err, smear, smerr, roll, locx, locy, cenx, ceny
         # Writing table data to fits file
-        tab.write('TIC_' + ticids[i] + '_' + sectors[i] + '.fits', format='fits')
-        tb_fits = fits.open('TIC_' + ticids[i] + '_' + sectors[i] + '.fits')
+        tab.write('TIC_' + ticid + '_' + sectors[i] + '.fits', format='fits')
+        tb_fits = fits.open('TIC_' + ticid + '_' + sectors[i] + '.fits')
         tb_fits_hdr = tb_fits[1].header
         hdr1 = hdr[8:]
         crds = hdr1.cards
@@ -119,15 +120,15 @@ def tess_data(name, pdc=True, verbose=True):
         tb_fits_hdr.append(('AP_RADI', 11.0, '(px) Radius of Aperture'))                 # Aperture radius
         tb_fits_hdr.rename_keyword('RA_OBJ', 'RA_TARG')                                  # RA and DEC keyword name change
         tb_fits_hdr.rename_keyword('DEC_OBJ', 'DEC_TARG')
-        os.system('rm ' + 'TIC_' + ticids[i] + '_' + sectors[i] + '.fits')
+        os.system('rm ' + 'TIC_' + ticid + '_' + sectors[i] + '.fits')
         os.system('rm -r mastDownload')
-        name1 = 'CH_PR' + ticids[i][8:14] + '_TG' + ticids[i][14:17] + sectors[i][-4:] + '_V0000_TIC'
-        name2 = 'CH_PR' + ticids[i][8:14] + '_TG' + ticids[i][14:17] + sectors[i][-4:] + '_SCI_COR_Lightcurve-DEFAULT_V0000_TIC'
+        name1 = 'TIC_' + ticid + '_SEC' + sectors[i][-4:] + '_V0000'
+        name2 = 'TIC_' + ticid + '_SEC' + sectors[i][-4:] + '_SCI_COR_Lightcurve-DEFAULT_V0000'
         tb_fits.writeto(name2 + '.fits')
         os.system('tar -cvzf ' + name1 + '.tgz ' + name2 + '.fits')
         os.system('rm ' + name2 + '.fits')
         os.system('mv ' + name1 + '.tgz ' + p3 + '/' + name1 + '.tgz')
-        disp_tic.append(ticids[i][8:])
+        disp_tic.append(ticid)
         disp_sec.append(sectors[i][-4:])
         disp_tgz.append(name1)
     if verbose:
@@ -156,7 +157,6 @@ def pipe_data(name, fileid, imagette=True):
         tgz file readable to
         pycheops
     """
-    fileid = fileid[:-6]
     hdul = fits.open(name)
     hdr = hdul[1].header
     dta = Table.read(hdul[1])
@@ -198,32 +198,32 @@ def pipe_data(name, fileid, imagette=True):
     for j in range(len(Us_n)):
         tab[Us_n[j]] = Us[j]
     # Saving the table first
-    tab.write(fileid + '_V0000_PIPE.fits', format='fits')
+    tab.write(fileid + '_PIPE.fits', format='fits')
     # Making changes to the saved file
-    tb_fits = fits.open(fileid + '_V0000_PIPE.fits')
+    tb_fits = fits.open(fileid + '_PIPE.fits')
     tb_fits_hdr = tb_fits[1].header
     hdr1 = hdr[8:]
     hdr2 = hdr1[:-47]
     crds = hdr2.cards
     for j in range(len(crds)):
         tb_fits_hdr.append(crds[j])
-    tb_fits_hdr.append(('AP_RADI', 0.0, '(px) Radius of Aperture/NA -- PSF Photometry'))                 # Aperture radius
+    tb_fits_hdr.append(('AP_RADI', 25.0, '(px) Radius of Aperture/NA -- PSF Photometry'))                 # Aperture radius
     nn1 = tb_fits_hdr['TARGNAME']
-    os.system('rm ' + fileid + '_V0000_PIPE.fits')
-    tb_fits.writeto(fileid + '_SCI_COR_Lightcurve-DEFAULT_V0000_PIPE.fits')
-    os.system('tar -cvzf ' + fileid + '_V0000_PIPE.tgz ' + fileid + '_SCI_COR_Lightcurve-DEFAULT_V0000_PIPE.fits')
-    os.system('mv ' + fileid + '_V0000_PIPE.tgz ' + p3 + '/' + fileid + '_V0000_PIPE.tgz')
-    os.system('rm ' + fileid + '_SCI_COR_Lightcurve-DEFAULT_V0000_PIPE.fits')
+    os.system('rm ' + fileid + '_PIPE.fits')
+    tb_fits.writeto('PIPE_' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
+    os.system('tar -cvzf PIPE_' + fileid + '.tgz PIPE_' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
+    os.system('mv PIPE_' + fileid + '.tgz ' + p3 + '/PIPE_' + fileid + '.tgz')
+    os.system('rm PIPE_' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
     print('-----------------------------------------------------------------------------')
     print('Name of the file\t\t\t\t.tgz file')
     print('-----------------------------------------------------------------------------')
-    print(nn1 + '\t\t\t\t' + fileid + '_V0000_PIPE.tgz')
+    print(nn1 + '\t\t\t\tPIPE_' + fileid + '.tgz')
     # For meta files
     tab1 = Table()
     tab1['thermFront_2'] = tft2
-    tab1.write(fileid + '-meta.fits')
-    os.system('mv ' + fileid + '-meta.fits ' + p3 + '/' + fileid + '_V0000-meta.fits')
-    print('meta\t\t\t\t\t' + fileid + '_V0000-meta.fits')
+    tab1.write(fileid + '-meta_PIPE.fits')
+    os.system('mv ' + fileid + '-meta_PIPE.fits ' + p3 + '/' + fileid + '-meta_PIPE.fits')
+    print('meta\t\t\t\t\t' + fileid + '-meta_PIPE.fits')
 
 
 def kepler_data(name, pdc=True, long_cadence=True, verbose=True):
@@ -293,23 +293,25 @@ def kepler_data(name, pdc=True, long_cadence=True, verbose=True):
             print('Data products found over ' + str(len(cij)) + ' quarters/cycles.')
             print('Downloading them...')
         for j in range(len(cij)):
-            sector = dpr['description'][cij[j]].split('- ')[1]
+            sector = f"{i:02}" + f"{j:02}" + '_' + dpr['description'][cij[j]].split('- ')[1]
             tab = Observations.download_products(dpr[cij[j]])
             lpt = tab['Local Path'][0][1:]
             # Reading fits
             hdul = fits.open(p1 + lpt)
             hdr = hdul[0].header
-            kicid = str(hdr['KEPLERID'])
-            if 'Kepler' in name:
-                kicid = '00' + kicid
+            kicid = int(hdr['KEPLERID'])
+            kicid = f"{kicid:010}"
             dta = Table.read(hdul[1])
             # Available data products
-            if pdc:
-                fl = np.asarray(dta['PDCSAP_FLUX'])
-                fle = np.asarray(dta['PDCSAP_FLUX_ERR'])
-            else:
-                fl = np.asarray(dta['SAP_FLUX'])
-                fle = np.asarray(dta['SAP_FLUX_ERR'])
+            try:
+                if pdc:
+                    fl = np.asarray(dta['PDCSAP_FLUX'])
+                    fle = np.asarray(dta['PDCSAP_FLUX_ERR'])
+                else:
+                    fl = np.asarray(dta['SAP_FLUX'])
+                    fle = np.asarray(dta['SAP_FLUX_ERR'])
+            except:
+                continue
             mask = np.isfinite(fl)                                # Creating Mask to remove Nans
             bjd1 = np.asarray(dta['TIME'])[mask] + 2454833        # BJD without mask
             fl, fle = fl[mask], fle[mask]                         # Flux and Error in flux without Nans
@@ -352,8 +354,8 @@ def kepler_data(name, pdc=True, long_cadence=True, verbose=True):
             tb_fits_hdr.rename_keyword('DEC_OBJ', 'DEC_TARG')
             os.system('rm ' + 'KIC_' + kicid + '_' + sector + '.fits')
             os.system('rm -r mastDownload')
-            name1 = 'CH_PR' + kicid[0:6] + '_TG' + kicid[6:] + '000_V0000_KIC_' + sector
-            name2 = 'CH_PR' + kicid[0:6] + '_TG' + kicid[6:] + '000_SCI_COR_Lightcurve-DEFAULT_V0000_KIC_' + sector
+            name1 = 'KIC_' + kicid + '_SEC_' + sector
+            name2 = 'KIC_' + kicid + '_SEC_' + sector + '_SCI_COR_Lightcurve-DEFAULT_V0000' 
             tb_fits.writeto(name2 + '.fits')
             os.system('tar -cvzf ' + name1 + '.tgz ' + name2 + '.fits')
             os.system('rm ' + name2 + '.fits')
@@ -363,7 +365,7 @@ def kepler_data(name, pdc=True, long_cadence=True, verbose=True):
             disp_tgz.append(name1)
     if verbose:
         print('----------------------------------------------------------------------------------------')
-        print('Name\t\tKIC-id\t\t\tSector\t\t\t.tgz name')
+        print('Name\t\t\tKIC-id\t\t\tSector\t\t\t.tgz name')
         print('----------------------------------------------------------------------------------------')
         for i in range(len(disp_tgz)):
             print(name + '\t\t' + disp_kic[i] + '\t\t' + disp_sec[i] + '\t\t' + disp_tgz[i])
