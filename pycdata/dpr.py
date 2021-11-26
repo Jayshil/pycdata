@@ -221,9 +221,9 @@ def pipe_data(name, fileid, imagette=True):
     # For meta files
     tab1 = Table()
     tab1['thermFront_2'] = tft2
-    tab1.write(fileid + '-meta_PIPE.fits')
-    os.system('mv ' + fileid + '-meta_PIPE.fits ' + p3 + '/' + fileid + '-meta_PIPE.fits')
-    print('meta\t\t\t\t\t' + fileid + '-meta_PIPE.fits')
+    tab1.write('PIPE_' + fileid + '-meta.fits')
+    os.system('mv PIPE_' + fileid + '-meta.fits ' + p3 + '/PIPE_' + fileid + '-meta.fits')
+    print('meta\t\t\t\t\tPIPE_' + fileid + '-meta.fits')
 
 
 def kepler_data(name, pdc=True, long_cadence=True, verbose=True):
@@ -369,3 +369,6 @@ def kepler_data(name, pdc=True, long_cadence=True, verbose=True):
         print('----------------------------------------------------------------------------------------')
         for i in range(len(disp_tgz)):
             print(name + '\t\t' + disp_kic[i] + '\t\t' + disp_sec[i] + '\t\t' + disp_tgz[i])
+
+p9 = '/home/jayshil/Documents/CHEOPS/pycdata/Tests/Data/PIPE/WASP-189_201_im.fits'
+pipe_data(p9, 'CH_PR100041_TG000201_V0200')
