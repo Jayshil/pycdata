@@ -16,6 +16,8 @@ python setup.py install
 
 There you are! You are now ready to use this package!
 
+Note that the installation of `pycdata` requires [`astropy`](https://www.astropy.org/index.html) and [`astroquery`](https://astroquery.readthedocs.io/en/latest/index.html) to be installed on your machine, besides [`pycheops`](https://github.com/pmaxted/pycheops).
+
 ## PIPE Data
 As already been mentioned, [`PIPE`](https://github.com/alphapsa/PIPE) produces PSF photometry for the CHEOPS targets. To make the data products from [`PIPE`](https://github.com/alphapsa/PIPE) accessible to [`pycheops`](https://github.com/pmaxted/pycheops), follow,
 
@@ -48,3 +50,5 @@ The only difference is the `long_cadence` keyword since Kepler mission offers it
 
 ## Comments/Suggestions/Contributions
 We would love to hear your comments and/or suggestions to make `pycdata` more accessible. Furthermore, if you want to make any contributions to the project, you are more than welcome --- feel free to open a pull request.
+
+[![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)
