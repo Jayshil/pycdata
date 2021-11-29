@@ -48,7 +48,7 @@ dpr.kepler_data(name, pdc=True, long_cadence=True, verbose=True)
 
 The only difference is the `long_cadence` keyword since Kepler mission offers its data products in two cadences.
 
-## How to use dataproducts with [`pycheops`](https://github.com/pmaxted/pycheops)?
+## How to use data products with [`pycheops`](https://github.com/pmaxted/pycheops)?
 It is really simple -- upon using any commands from above, `pycdata` will create data products directly into [`pycheops`](https://github.com/pmaxted/pycheops) cache directory. It will also show the name of the newly created `.tgz` file in the [`pycheops`](https://github.com/pmaxted/pycheops) cache directory. What remains to do is, while creating a `dataset` object with [`pycheops`](https://github.com/pmaxted/pycheops), the source of file to be mentioned, e.g.,
 
 ```
