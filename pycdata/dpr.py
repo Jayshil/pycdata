@@ -369,6 +369,3 @@ def kepler_data(name, pdc=True, long_cadence=True, verbose=True):
         print('----------------------------------------------------------------------------------------')
         for i in range(len(disp_tgz)):
             print(name + '\t\t' + disp_kic[i] + '\t\t' + disp_sec[i] + '\t\t' + disp_tgz[i])
-
-p9 = '/home/jayshil/Documents/CHEOPS/pycdata/Tests/Data/PIPE/WASP-189_201_im.fits'
-pipe_data(p9, 'CH_PR100041_TG000201_V0200')
