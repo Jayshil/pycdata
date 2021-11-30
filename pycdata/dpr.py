@@ -139,7 +139,7 @@ def tess_data(name, pdc=True, verbose=True):
                 print(name + '\t\t' + disp_tic[i] + '\t\t' + disp_sec[i] + '\t\t' + disp_tgz[i])
 
 
-def pipe_data(name, fileid, imagette=True):
+def pipe_data(name, fileid):
     """
     Parameters:
     -----------
@@ -148,10 +148,6 @@ def pipe_data(name, fileid, imagette=True):
         containing the PIPE data
     fileid : str
         unique file id for the target visit
-    imegette : bool
-        Boolean on whether the data comes
-        from imegette or sub-array
-        Default is True.
     -----------
     return
         tgz file readable to
@@ -171,10 +167,7 @@ def pipe_data(name, fileid, imagette=True):
     fl, fle = np.asarray(dta['FLUX'])[msk], np.asarray(dta['FLUXERR'])[msk]
     roll, xc, yc, tft2 = np.asarray(dta['ROLL'])[msk], np.asarray(dta['XC'])[msk],\
         np.asarray(dta['YC'])[msk], np.asarray(dta['thermFront_2'])[msk]
-    if imagette:
-        bg = np.asarray(dta['BG'])[msk] * 50 * 50
-    else:
-        bg = np.asarray(dta['BG'])[msk] * 200 * 200
+    bg = np.asarray(dta['BG'])[msk] * 50 * 50
     # For relative weights of the first arbitrary PSF principal components
     Us_n = np.array([])      # To store the names of U
     Us = []                  # To store the values of U
