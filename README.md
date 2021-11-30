@@ -23,10 +23,10 @@ As already been mentioned, [`PIPE`](https://github.com/alphapsa/PIPE) produces P
 
 ```
 from pycdata import dpr
-dpr.pipe_data(name, fileid, imagette=True)
+dpr.pipe_data(name, fileid)
 ```
 
-`name` is the name of the fits file (data products from [`PIPE`](https://github.com/alphapsa/PIPE)), and `fileid` is a unique file key for each of the CHEOPS observations. The keyword, which is boolean, `imagette` can be set `True` if [`PIPE`](https://github.com/alphapsa/PIPE) used CHEOPS imagettes to produce PSF photometry. The columns for which the data was not available, e.g., contamination, dark, and smearing was set to zero.
+`name` is the name of the fits file (data products from [`PIPE`](https://github.com/alphapsa/PIPE)), and `fileid` is a unique file key for each of the CHEOPS observations. The columns for which the data was not available, e.g., contamination, dark, and smearing was set to zero.
 
 ## TESS Data
 It is even simpler to use `pycdata` with TESS (the Transiting Exoplanets Survey Satellite) data products:
