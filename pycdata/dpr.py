@@ -167,7 +167,7 @@ def pipe_data(name, fileid):
     fl, fle = np.asarray(dta['FLUX'])[msk], np.asarray(dta['FLUXERR'])[msk]
     roll, xc, yc, tft2 = np.asarray(dta['ROLL'])[msk], np.asarray(dta['XC'])[msk],\
         np.asarray(dta['YC'])[msk], np.asarray(dta['thermFront_2'])[msk]
-    bg = np.asarray(dta['BG'])[msk] * 50 * 50
+    bg = np.asarray(dta['BG'])[msk]
     # For relative weights of the first arbitrary PSF principal components
     Us_n = np.array([])      # To store the names of U
     Us = []                  # To store the values of U
