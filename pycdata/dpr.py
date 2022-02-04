@@ -42,7 +42,7 @@ def tess_data(name, pdc=True, verbose=True):
     if len(b) == 0:
         raise Exception('No TESS timeseries data available for this target.\nTry another target...')
     # To extract obs-id from the observation table
-    sectors, pi_name, obsids, exptime = np.array([]), np.array([]), np.array([]), np.array([])
+    sectors, pi_name, obsids, exptime, new_b = np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
     for i in range(len(b)):
         data1 = obt['dataURL'][int(b[i])]
         if data1[-9:] == 's_lc.fits':
@@ -52,6 +52,7 @@ def tess_data(name, pdc=True, verbose=True):
                     sec = fls[j]
                     tic = fls[j+1]
             sectors = np.hstack((sectors, sec))
+            new_b = np.hstack((new_b, b[i]))
             obsids = np.hstack((obsids, obt['obsid'][int(b[i])]))
             pi_name = np.hstack((pi_name, obt['proposal_pi'][int(b[i])]))
             exptime = np.hstack((exptime, obt['t_exptime'][int(b[i])]))
@@ -60,7 +61,7 @@ def tess_data(name, pdc=True, verbose=True):
         print('Downloading them...')
     disp_tic, disp_sec, disp_tgz = [], [], []
     for i in range(len(sectors)):
-        dpr = Observations.get_product_list(obt[int(b[i])])
+        dpr = Observations.get_product_list(obt[int(new_b[i])])
         cij = 0
         for j in range(len(dpr['obsID'])):
             if dpr['description'][j] == 'Light curves':
