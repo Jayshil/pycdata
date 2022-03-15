@@ -154,6 +154,8 @@ def pipe_data(name, fileid):
         tgz file readable to
         pycheops
     """
+    # Changing the version of fileid
+    fileid = fileid[:-4] + '0000' 
     hdul = fits.open(name)
     hdr = hdul[1].header
     dta = Table.read(hdul[1])
