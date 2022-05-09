@@ -206,28 +206,28 @@ def pipe_data(name, fileid):
     tb_fits_hdr.append(('AP_RADI', 25.0, '(px) Radius of Aperture/NA -- PSF Photometry'))                 # Aperture radius
     nn1 = tb_fits_hdr['TARGNAME']
     os.system('rm ' + fileid + '_PIPE.fits')
-    #tb_fits.writeto('PIPE_' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
-    #os.system('tar -cvzf PIPE_' + fileid + '.tgz PIPE_' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
-    #os.system('mv PIPE_' + fileid + '.tgz ' + p3 + '/PIPE_' + fileid + '.tgz')
+    tb_fits.writeto('PIPE_' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
+    os.system('tar -cvzf PIPE_' + fileid + '.tgz PIPE_' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
+    os.system('mv PIPE_' + fileid + '.tgz ' + p3 + '/PIPE_' + fileid + '.tgz')
     #os.system('mv PIPE_' + fileid + '.tgz ' + p3 + '/' + fileid + '.tgz')
-    #os.system('rm PIPE_' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
-    tb_fits.writeto(fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
-    os.system('tar -cvzf ' + fileid + '.tgz ' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
-    os.system('mv ' + fileid + '.tgz ' + p3 + '/' + fileid + '.tgz')
-    os.system('rm ' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
+    os.system('rm PIPE_' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
+    #tb_fits.writeto(fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
+    #os.system('tar -cvzf ' + fileid + '.tgz ' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
+    #os.system('mv ' + fileid + '.tgz ' + p3 + '/' + fileid + '.tgz')
+    #os.system('rm ' + fileid[:-6] + '_SCI_COR_Lightcurve-DEFAULT_V0000.fits')
     print('-----------------------------------------------------------------------------')
     print('Name of the file\t\t\t\t.tgz file')
     print('-----------------------------------------------------------------------------')
-    #print(nn1 + '\t\t\t\tPIPE_' + fileid + '.tgz')
-    print(nn1 + '\t\t\t\t' + fileid + '.tgz')
+    print(nn1 + '\t\t\t\tPIPE_' + fileid + '.tgz')
+    #print(nn1 + '\t\t\t\t' + fileid + '.tgz')
     # For meta files
     tab1 = Table()
     tab1['thermFront_2'] = tft2
     tab1.write('PIPE_' + fileid + '-meta.fits')
-    #os.system('mv PIPE_' + fileid + '-meta.fits ' + p3 + '/PIPE_' + fileid + '-meta.fits')
-    os.system('mv PIPE_' + fileid + '-meta.fits ' + p3 + '/' + fileid + '-meta.fits')
-    #print('meta\t\t\t\t\tPIPE_' + fileid + '-meta.fits')
-    print('meta\t\t\t\t\t' + fileid + '-meta.fits')
+    os.system('mv PIPE_' + fileid + '-meta.fits ' + p3 + '/PIPE_' + fileid + '-meta.fits')
+    #os.system('mv PIPE_' + fileid + '-meta.fits ' + p3 + '/' + fileid + '-meta.fits')
+    print('meta\t\t\t\t\tPIPE_' + fileid + '-meta.fits')
+    #print('meta\t\t\t\t\t' + fileid + '-meta.fits')
 
 
 def kepler_data(name, pdc=True, long_cadence=True, verbose=True):
